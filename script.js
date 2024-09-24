@@ -14,6 +14,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const contextMenu = document.querySelector('.context-menu');
     const previousBtn = document.getElementById('previous');
     const nextBtn = document.getElementById('next');
+    const volumeSlider = document.getElementById('volume-slider');
+    const volumeIcon = document.getElementById('volume-icon');
 
     let db;
     let musicLibrary = [];
@@ -51,6 +53,8 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('click', hideContextMenu);
     previousBtn.addEventListener('click', playPreviousSong);
     nextBtn.addEventListener('click', playNextSong);
+    volumeSlider.addEventListener('input', handleVolumeChange);
+    volumeIcon.addEventListener('click', toggleMute);
 
     // Add mobile navigation
     const mobileNav = document.createElement('nav');
@@ -259,6 +263,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         currentAudio = new Audio(musicData.data);
         currentMusicItem = musicItem;
+        currentAudio.volume = volumeSlider.value; // Set initial volume
         currentAudio.play();
         musicItem.classList.add('playing');
 
@@ -272,6 +277,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Update play queue with a new random order
         playQueue = shuffleArray([...musicLibrary]);
+
+        updateVolumeIcon(); // Update the volume icon when a new song starts
     }
 
     function updatePlayer(musicData) {
@@ -415,5 +422,36 @@ document.addEventListener('DOMContentLoaded', () => {
             [array[i], array[j]] = [array[j], array[i]];
         }
         return array;
+    }
+
+    function handleVolumeChange() {
+        if (currentAudio) {
+            currentAudio.volume = volumeSlider.value;
+            updateVolumeIcon();
+        }
+    }
+
+    function toggleMute() {
+        if (currentAudio) {
+            if (currentAudio.volume > 0) {
+                currentAudio.dataset.prevVolume = currentAudio.volume;
+                currentAudio.volume = 0;
+                volumeSlider.value = 0;
+            } else {
+                currentAudio.volume = currentAudio.dataset.prevVolume || 1;
+                volumeSlider.value = currentAudio.volume;
+            }
+            updateVolumeIcon();
+        }
+    }
+
+    function updateVolumeIcon() {
+        if (currentAudio.volume > 0.5) {
+            volumeIcon.className = 'fas fa-volume-up';
+        } else if (currentAudio.volume > 0) {
+            volumeIcon.className = 'fas fa-volume-down';
+        } else {
+            volumeIcon.className = 'fas fa-volume-mute';
+        }
     }
 });
